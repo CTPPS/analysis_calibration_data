@@ -91,7 +91,7 @@ void ReconstructProtonFromOneRP(const unsigned int rpId, const TrackData &track,
 
 	// determine uncertainty of xi
 	const double si_x_alignment = 150E-6;			// in m, alignment uncertainty
-	const double si_x_neglected_vertex = 150E-6;	// in m, to (approximately) account for the neglected vertex term in proton transport
+	const double si_x_neglected_vertex = 150E-6;	// in m, to (approximately) account for the neglected angular term in proton transport
 	const double si_rel_D = 0.055;					// 1, relative uncertainty of dispersion
 
 	const double si_x = sqrt( si_x_alignment*si_x_alignment + si_x_neglected_vertex*si_x_neglected_vertex );
