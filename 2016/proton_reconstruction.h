@@ -87,16 +87,19 @@ void ReconstructProtonFromOneRP(const unsigned int rpId, const TrackData &track,
 	const TSpline3 *s_x_to_xi = s_it->second;
 
 	// determine xi
-	result.xi = s_x_to_xi->Eval(track.x*1E-3);	// spline expects x in m
+	result.xi = s_x_to_xi->Eval(track.x*1E-3);		// spline expects x in m
 
 	// determine uncertainty of xi
-	// TODO
-	double de_x = 0.2E-3;		// m
-	double de_rel_D = 0.055;	// 1
+	const double si_x_alignment = 150E-6;			// in m, alignment uncertainty
+	const double si_x_neglected_vertex = 150E-6;	// in m, to (approximately) account for the neglected vertex term in proton transport
+	const double si_rel_D = 0.055;					// 1, relative uncertainty of dispersion
 
-	double de_xi = s_x_to_xi->Eval(track.x*1E-3 + de_x) - result.xi;
+	const double si_x = sqrt( si_x_alignment*si_x_alignment + si_x_neglected_vertex*si_x_neglected_vertex );
 
-	result.xi_unc = sqrt( pow(de_xi, 2.) + pow(de_rel_D * result.xi, 2.) );
+	const double si_xi_from_x = s_x_to_xi->Eval(track.x*1E-3 + si_x) - result.xi;
+	const double si_xi_from_D_x = si_rel_D * result.xi;
+
+	result.xi_unc = sqrt( si_xi_from_x*si_xi_from_x + si_xi_from_D_x*si_xi_from_D_x );
 
 	// reconstruction completed
 	result.valid = true;

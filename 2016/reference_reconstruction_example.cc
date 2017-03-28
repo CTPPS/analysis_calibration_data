@@ -89,7 +89,7 @@ int main()
 			ReconstructProtonFromOneRP(it.first, it.second, proton);
 
 			if (proton.valid)
-				printf("    RP %u : xi = %.3f +- %.3f\n", it.first, proton.xi, proton.xi_unc);
+				printf("    RP %u : xi = %.3f +- %.4f\n", it.first, proton.xi, proton.xi_unc);
 		}
 	}
 
