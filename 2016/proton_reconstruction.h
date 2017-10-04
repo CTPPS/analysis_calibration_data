@@ -65,13 +65,13 @@ TSpline3* PrepareOneFunction(const std::string &fn, const std::string &on)
 
 std::map<unsigned int, TSpline3 *> m_s_x_to_xi;
 
-void InitReconstruction()
+void InitReconstruction(const std::string dir = "optics")
 {
-	m_s_x_to_xi[2] = PrepareOneFunction("optics/xi_as_a_function_of_x_graph_b2.root", "XRPH_C6L5_B2");
-	m_s_x_to_xi[3] = PrepareOneFunction("optics/xi_as_a_function_of_x_graph_b2.root", "XRPH_D6L5_B2");
+	m_s_x_to_xi[2] = PrepareOneFunction(dir + "/xi_as_a_function_of_x_graph_b2.root", "XRPH_C6L5_B2");
+	m_s_x_to_xi[3] = PrepareOneFunction(dir + "/xi_as_a_function_of_x_graph_b2.root", "XRPH_D6L5_B2");
 
-	m_s_x_to_xi[102] = PrepareOneFunction("optics/xi_as_a_function_of_x_graph_b1.root", "XRPH_C6R5_B1");
-	m_s_x_to_xi[103] = PrepareOneFunction("optics/xi_as_a_function_of_x_graph_b1.root", "XRPH_D6R5_B1");
+	m_s_x_to_xi[102] = PrepareOneFunction(dir + "/xi_as_a_function_of_x_graph_b1.root", "XRPH_C6R5_B1");
+	m_s_x_to_xi[103] = PrepareOneFunction(dir + "/xi_as_a_function_of_x_graph_b1.root", "XRPH_D6R5_B1");
 }
 
 //----------------------------------------------------------------------------------------------------
