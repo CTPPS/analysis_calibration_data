@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <cstring>
 
 #include "DataFormats/CTPPSDetId/interface/TotemRPDetId.h"
