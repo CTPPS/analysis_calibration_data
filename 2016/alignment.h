@@ -5,8 +5,8 @@
 #include <map>
 #include <cstring>
 
-#include "track_lite.h"
-
+#include "DataFormats/CTPPSDetId/interface/TotemRPDetId.h"
+#include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLite.h"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -112,21 +112,27 @@ struct AlignmentResults : public std::map<unsigned int, AlignmentResult>
 		return 0;
 	}
 
-	TrackDataCollection Apply(const TrackDataCollection &input) const
+	std::vector<CTPPSLocalTrackLite> Apply(const std::vector<CTPPSLocalTrackLite> &input) const
 	{
-		TrackDataCollection output = input;
+		std::vector<CTPPSLocalTrackLite> output;
 
-		for (auto &it : output)
+		for (const auto &t : input)
 		{
-			auto ait = find(it.first);
+			TotemRPDetId rpId(t.getRPId());
+			unsigned int rpDecId = rpId.arm()*100 + rpId.station()*10 + rpId.rp();
+
+			auto ait = find(rpDecId);
 			if (ait == end())
 			{
-				printf("ERROR in AlignmentResults::Apply > no alignment data for RP %u.\n", it.first);
+				printf("ERROR in AlignmentResults::Apply > no alignment data for RP %u.\n", rpDecId);
 				exit(1);
 			}
 
-			it.second.x += ait->second.sh_x;
-			it.second.y -= ait->second.sh_y;
+			output.push_back(CTPPSLocalTrackLite(t.getRPId(),
+				t.getX() + ait->second.sh_x, t.getXUnc(),
+				t.getY() - ait->second.sh_y, t.getYUnc(),
+				t.getTime(), t.getTimeUnc()
+			));
 		}
 
 		return output;

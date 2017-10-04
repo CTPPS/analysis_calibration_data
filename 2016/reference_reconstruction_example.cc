@@ -2,9 +2,8 @@
 #include "DataFormats/FWLite/interface/ChainEvent.h"
 #include "DataFormats/Common/interface/DetSetVector.h"
 
-#include "DataFormats/CTPPSReco/interface/TotemRPLocalTrack.h"
+#include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLite.h"
 
-#include "track_lite.h"
 #include "alignment.h"
 #include "fill_info.h"
 #include "proton_reconstruction.h"
@@ -21,9 +20,9 @@ int main()
 {
 	// get input
 	vector<string> input_files = {
-		"/afs/cern.ch/user/j/jkaspar/public/event_pick/pickevents_2016B.root",
-		"/afs/cern.ch/user/j/jkaspar/public/event_pick/pickevents_2016C.root",
-		"/afs/cern.ch/user/j/jkaspar/public/event_pick/pickevents_2016G.root",
+		"/afs/cern.ch/user/j/jkaspar/public/ctpps/event_pick/pickevents_B.root",
+		"/afs/cern.ch/user/j/jkaspar/public/ctpps/event_pick/pickevents_C.root",
+		"/afs/cern.ch/user/j/jkaspar/public/ctpps/event_pick/pickevents_G.root",
 	};
 	fwlite::ChainEvent event(input_files);
 
@@ -46,20 +45,8 @@ int main()
 		printf("\nevent %u:%llu\n", event.id().run(), event.id().event());
 
 		// get track data
-		fwlite::Handle< DetSetVector<TotemRPLocalTrack> > aodTracks;
-		aodTracks.getByLabel(event, "totemRPLocalTrackFitter");
-
-		// produce collection of lite tracks (in future this will be done in miniAOD)
-		TrackDataCollection liteTracks;
-		for (const auto &ds : *aodTracks)
-		{
-			const auto &rpId = ds.detId();
-
-			for (const auto &tr : ds)
-			{
-				liteTracks[rpId] = tr;
-			}
-		}
+		fwlite::Handle< vector<CTPPSLocalTrackLite> > hTracks;
+		hTracks.getByLabel(event, "ctppsLocalTrackLiteProducer");
 
 		// get alignment
 		if (prev_run != event.id().run() || alignments == NULL)
@@ -80,16 +67,21 @@ int main()
 		}
 
 		// apply alignment
-		TrackDataCollection liteTracksAligned = alignments->Apply(liteTracks);
+		auto tracksAligned = alignments->Apply(*hTracks);
 
 		// proton reconstruction, RP by RP
-		for (const auto it : liteTracksAligned)
+		for (const auto track : tracksAligned)
 		{
 			ProtonData proton;
-			ReconstructProtonFromOneRP(it.first, it.second, proton);
+			ReconstructProtonFromOneRP(track, proton);
 
 			if (proton.valid)
-				printf("    RP %u : xi = %.3f +- %.4f\n", it.first, proton.xi, proton.xi_unc);
+			{
+				TotemRPDetId rpId(track.getRPId());
+				unsigned int rpDecId = rpId.arm()*100 + rpId.station()*10 + rpId.rp();
+
+				printf("    RP %u : xi = %.3f +- %.4f\n", rpDecId, proton.xi, proton.xi_unc);
+			}
 		}
 	}
 

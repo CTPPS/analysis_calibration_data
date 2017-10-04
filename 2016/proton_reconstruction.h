@@ -7,7 +7,8 @@
 #include <map>
 #include <string>
 
-#include "track_lite.h"
+#include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLite.h"
+#include "DataFormats/CTPPSDetId/interface/TotemRPDetId.h"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -75,19 +76,22 @@ void InitReconstruction()
 
 //----------------------------------------------------------------------------------------------------
 
-void ReconstructProtonFromOneRP(const unsigned int rpId, const TrackData &track, ProtonData &result)
+void ReconstructProtonFromOneRP(const CTPPSLocalTrackLite &track, ProtonData &result)
 {
 	// default result
 	result.valid = false;
 
 	// get x-to-xi spline
-	const auto s_it = m_s_x_to_xi.find(rpId);
+	TotemRPDetId rpId(track.getRPId());
+	unsigned int rpDecId = rpId.arm()*100 + rpId.station()*10 + rpId.rp();
+
+	const auto s_it = m_s_x_to_xi.find(rpDecId);
 	if (s_it == m_s_x_to_xi.end())
 		return;
 	const TSpline3 *s_x_to_xi = s_it->second;
 
 	// determine xi
-	result.xi = s_x_to_xi->Eval(track.x*1E-3);		// spline expects x in m
+	result.xi = s_x_to_xi->Eval(track.getX()*1E-3);		// spline expects x in m
 
 	// determine uncertainty of xi
 	const double si_x_alignment = 150E-6;			// in m, alignment uncertainty
@@ -96,7 +100,7 @@ void ReconstructProtonFromOneRP(const unsigned int rpId, const TrackData &track,
 
 	const double si_x = sqrt( si_x_alignment*si_x_alignment + si_x_neglected_angle*si_x_neglected_angle );
 
-	const double si_xi_from_x = s_x_to_xi->Eval(track.x*1E-3 + si_x) - result.xi;
+	const double si_xi_from_x = s_x_to_xi->Eval(track.getX()*1E-3 + si_x) - result.xi;
 	const double si_xi_from_D_x = si_rel_D * result.xi;
 
 	result.xi_unc = sqrt( si_xi_from_x*si_xi_from_x + si_xi_from_D_x*si_xi_from_D_x );
